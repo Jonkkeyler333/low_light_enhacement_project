@@ -70,7 +70,7 @@ class CalibrateNetwork(nn.Module):
 
         self.out_conv = nn.Sequential(
             nn.Conv2d(in_channels=channels, out_channels=3, kernel_size=3, stride=1, padding=1),
-            nn.Sigmoid()
+            nn.Sigmoid()    
         )
 
     def forward(self, input):
@@ -102,16 +102,15 @@ class Network(nn.Module):
             m.weight.data.normal_(1., 0.02)
 
     def forward(self, input):
-
         ilist, rlist, inlist, attlist = [], [], [], []
-        input_op = input
+        input_op = input # input = y 
         for i in range(self.stage):
-            inlist.append(input_op)
-            i = self.enhance(input_op)
-            r = input / i
+            inlist.append(input_op) 
+            i = self.enhance(input_op) # input_op = x^t , i = u^t , so i is the enhanced image of x^t
+            r = input / i # z^t = y/x^t, 
             r = torch.clamp(r, 0, 1)
-            att = self.calibrate(r)
-            input_op = input + att
+            att = self.calibrate(r)  # delta^t = x^t - f(z^t)
+            input_op = input + att # x^(t+1) = y + delta^t
             ilist.append(i)
             rlist.append(r)
             attlist.append(torch.abs(att))
@@ -120,7 +119,7 @@ class Network(nn.Module):
 
     def _loss(self, input):
         i_list, en_list, in_list, _ = self(input)
-        loss = 0
+        loss = 0    
         for i in range(self.stage):
             loss += self._criterion(in_list[i], i_list[i])
         return loss
