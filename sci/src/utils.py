@@ -20,6 +20,8 @@ def save_checkpoint(state, is_best, save):
   if is_best:
     best_filename = os.path.join(save, 'model_best.pth.tar')
     shutil.copyfile(filename, best_filename)
+    return best_filename
+  return filename
 
 
 def save(model, model_path):

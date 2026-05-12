@@ -16,11 +16,11 @@ class LOLDataset(Dataset):
         self.low_images = []
         self.high_images = []
         if self.train:
-            self.low_dir = os.path.join(root_dir, 'train/low')
-            self.high_dir = os.path.join(root_dir, 'train/high')
+            self.low_dir = os.path.join(root_dir, 'our485/low')
+            self.high_dir = os.path.join(root_dir, 'our485/high')
         else:
-            self.low_dir = os.path.join(root_dir, 'test/low')
-            self.high_dir = os.path.join(root_dir, 'test/high')    
+            self.low_dir = os.path.join(root_dir, 'eval15/low')
+            self.high_dir = os.path.join(root_dir, 'eval15/high')    
         for file in os.listdir(self.low_dir):
             if file.endswith('.png'):
                 image_path = os.path.join(self.low_dir, file)

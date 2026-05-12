@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from loss import LossFunction
+from models.loss import LossFunction
 
 class EnhanceNetwork(nn.Module):
     def __init__(self, layers, channels):
@@ -117,9 +117,9 @@ class Network(nn.Module):
 
         return ilist, rlist, inlist, attlist
 
-    def _loss(self, input):
+    def _loss(self, input) -> torch.Tensor:
         i_list, en_list, in_list, _ = self(input)
-        loss = 0    
+        loss = torch.tensor(0.0, device=input.device)
         for i in range(self.stage):
             loss += self._criterion(in_list[i], i_list[i])
         return loss
@@ -154,8 +154,7 @@ class Finetunemodel(nn.Module):
         r = torch.clamp(r, 0, 1)
         return i, r
 
-
-    def _loss(self, input):
+    def _loss(self, input) -> torch.Tensor:
         i, r = self(input)
         loss = self._criterion(input, i)
         return loss
