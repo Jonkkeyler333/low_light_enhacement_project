@@ -4,7 +4,7 @@ import torch
 import yaml
 from PIL import Image
 from torch.utils.data import DataLoader
-from datasets.lol import LOLDataset
+from dataset.lol import LOLDataset
 from models.sci_model import Network
 from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
 from torchmetrics.image import PeakSignalNoiseRatio as PSNR

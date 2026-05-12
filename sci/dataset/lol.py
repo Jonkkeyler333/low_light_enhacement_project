@@ -29,6 +29,8 @@ class LOLDataset(Dataset):
             if file.endswith('.png'):
                 image_path = os.path.join(self.high_dir, file)
                 self.high_images.append(image_path)
+        self.low_images.sort()
+        self.high_images.sort()
     
     def _load_image_transform(self, image_path: str) -> torch.Tensor:
         image = Image.open(image_path).convert('RGB')
