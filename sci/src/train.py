@@ -60,11 +60,11 @@ def setup_logging(log_dir: str = './logs') -> tuple[logging.Logger, logging.Logg
 def main():
     # config GPU
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    if device != 'cuda':
+    if device.type != 'cuda':
         raise RuntimeError('CUDA and maybe GPU isn\'t available')
 
     # load params
-    params = load_params('config.yaml')
+    params = load_params('src/config.yaml')
     DATA_DIR = params.get('DATA_DIR', './data')
     batch_size = params.get('BATCH_SIZE', 16)
     num_workers = params.get('NUM_WORKERS', 4)
@@ -121,7 +121,7 @@ def main():
         logger.info(f'Finished epoch {epoch + 1}/{epochs}')
         if (epoch+1) % 10 == 0:
             logger.info(f'Saving checkpoint for epoch {epoch + 1}')
-            checkpoint_dir = './checkpoints'
+            checkpoint_dir = '/checkpoints'
             os.makedirs(checkpoint_dir, exist_ok=True)
             save(model, os.path.join(checkpoint_dir, f'model_epoch_{epoch + 1}.pth'))
             logger.info(f'Saved checkpoint for epoch {epoch + 1}')

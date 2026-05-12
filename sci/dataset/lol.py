@@ -4,12 +4,14 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
+import torchvision.transforms.functional as F
 
 class LOLDataset(Dataset):
-    def __init__(self, root_dir: str, train:bool = True) -> None:
+    def __init__(self, root_dir: str, train:bool = True, crop_size = 256) -> None:
         super().__init__()
         self.root_dir = root_dir
         self.train = train
+        self.crop_size = crop_size
         self.transform = transforms.Compose([
             transforms.ToTensor(),
         ])
@@ -48,4 +50,7 @@ class LOLDataset(Dataset):
         high_image_path = self.high_images[index]
         low_image = self._load_image_transform(low_image_path)
         high_image = self._load_image_transform(high_image_path)
+        i, j, h, w = transforms.RandomCrop.get_params(low_image, output_size = (self.crop_size,self.crop_size) )
+        low_image = F.crop(low_image, i, j, h, w)
+        high_image = F.crop(high_image, i, j, h, w)
         return low_image, high_image, low_image_path, high_image_path
