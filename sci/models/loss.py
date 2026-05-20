@@ -2,15 +2,35 @@ import torch
 import torch.nn as nn
 
 class LossFunction(nn.Module):
-    def __init__(self):
+    def __init__(self, color_loss = False):
         super(LossFunction, self).__init__()
         self.l2_loss = nn.MSELoss()
         self.smooth_loss = SmoothLoss()
+        self.color_loss = color_loss
+        if self.color_loss:
+            self.color_loss_fn = ColorLoss()
 
     def forward(self, input, illu):
         Fidelity_Loss = self.l2_loss(illu, input)
         Smooth_Loss = self.smooth_loss(input, illu)
+        if self.color_loss:
+            Color_Loss = self.color_loss_fn(illu)
+            return 1.5*Fidelity_Loss + Smooth_Loss + Color_Loss
         return 1.5*Fidelity_Loss + Smooth_Loss
+
+class ColorLoss(nn.Module):
+    def __init__(self):
+        super(ColorLoss, self).__init__()
+    
+    def forward(self, illu):
+        red_mean = illu[:, 0, :, :].mean(dim=(1, 2))
+        green_mean = illu[:, 1, :, :].mean(dim=(1, 2))
+        blue_mean = illu[:, 2, :, :].mean(dim=(1, 2))
+        r_g = (red_mean - green_mean)**2
+        r_b = (red_mean - blue_mean)**2
+        g_b = (green_mean - blue_mean)**2
+        loss_val = (r_g + r_b + g_b).mean()
+        return loss_val
 
 class SmoothLoss(nn.Module):
     def __init__(self):

@@ -8,7 +8,7 @@ from dataset.lol import LOLDataset
 from models.sci_model import Network
 from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
 from torchmetrics.image import PeakSignalNoiseRatio as PSNR
-from utils import save_checkpoint, save
+from src.utils import save_checkpoint, save
 
 def load_params(path_config_path: str) -> dict:
     with open(path_config_path, 'r') as f:
@@ -121,7 +121,7 @@ def main():
         logger.info(f'Finished epoch {epoch + 1}/{epochs}')
         if (epoch+1) % 10 == 0:
             logger.info(f'Saving checkpoint for epoch {epoch + 1}')
-            checkpoint_dir = '/checkpoints'
+            checkpoint_dir = './checkpoints'
             os.makedirs(checkpoint_dir, exist_ok=True)
             save(model, os.path.join(checkpoint_dir, f'model_epoch_{epoch + 1}.pth'))
             logger.info(f'Saved checkpoint for epoch {epoch + 1}')

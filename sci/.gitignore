@@ -1,2 +1,6 @@
 /data
 /logs
+/checkpoints
+/inference
+/resultados_inferencia
+/results
