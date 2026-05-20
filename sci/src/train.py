@@ -83,6 +83,12 @@ def main():
     
     # model, optimizer, metrics
     model = Network().to(device)
+    model.enhance.in_conv.apply(model.weights_init)
+    model.enhance.conv.apply(model.weights_init)
+    model.enhance.out_conv.apply(model.weights_init)
+    model.calibrate.in_conv.apply(model.weights_init)
+    model.calibrate.convs.apply(model.weights_init)
+    model.calibrate.out_conv.apply(model.weights_init)
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
     ssim_train = SSIM().to(device)
     psnr_train = PSNR(data_range = 1).to(device)

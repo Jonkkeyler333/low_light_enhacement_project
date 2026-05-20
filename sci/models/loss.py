@@ -1,36 +1,67 @@
 import torch
 import torch.nn as nn
+# class LossFunction(nn.Module):
+#     def __init__(self, color_loss = False):
+#         super(LossFunction, self).__init__()
+#         self.l2_loss = nn.MSELoss()
+#         self.smooth_loss = SmoothLoss()
+#         self.color_loss = color_loss
+#         if self.color_loss:
+#             self.color_loss_fn = ColorLoss()
+
+#     def forward(self, input, illu):
+#         Fidelity_Loss = self.l2_loss(illu, input)
+#         Smooth_Loss = self.smooth_loss(input, illu)
+#         if self.color_loss:
+#             # Color_Loss suele ser muy grande, le damos un peso menor (e.g. 5.0) para que no abrume a Smooth_Loss
+#             Color_Loss = self.color_loss_fn(illu)
+#             return 2*Fidelity_Loss + 1.5*Smooth_Loss + 0.5*Color_Loss
+#         return 1.5*Fidelity_Loss + Smooth_Loss
+
+class ExposureLoss(nn.Module):
+    def __init__(self, patch_size=16, mean_val=0.6):
+        super(ExposureLoss, self).__init__()
+        self.pool = nn.AvgPool2d(patch_size)
+        self.mean_val = mean_val
+
+    def forward(self, enhanced):
+        # Promedio local usando Average Pooling para asegurar exposición balanceada
+        x = torch.mean(enhanced, dim=1, keepdim=True)
+        mean = self.pool(x)
+        return torch.mean(torch.pow(mean - self.mean_val, 2))
+
+class ColorConstancyLoss(nn.Module):
+    def __init__(self):
+        super(ColorConstancyLoss, self).__init__()
+
+    def forward(self, enhanced):
+        # Evalúa sobre toda la imagen pero con la imagen resultante, preservando tono gris natural
+        mean_rgb = torch.mean(enhanced, dim=(2, 3), keepdim=True)
+        mr, mg, mb = mean_rgb[:, 0, :, :], mean_rgb[:, 1, :, :], mean_rgb[:, 2, :, :]
+        d_rg = torch.pow(mr - mg, 2)
+        d_rb = torch.pow(mr - mb, 2)
+        d_gb = torch.pow(mg - mb, 2)
+        return torch.mean(d_rg + d_rb + d_gb)
 
 class LossFunction(nn.Module):
-    def __init__(self, color_loss = False):
+    def __init__(self):
         super(LossFunction, self).__init__()
         self.l2_loss = nn.MSELoss()
         self.smooth_loss = SmoothLoss()
-        self.color_loss = color_loss
-        if self.color_loss:
-            self.color_loss_fn = ColorLoss()
+        self.exp_loss_fn = ExposureLoss(patch_size=16, mean_val=0.6)
+        self.color_loss_fn = ColorConstancyLoss()
 
-    def forward(self, input, illu):
+    def forward(self, input, illu, enhanced):
+        # Pérdidas al mapa de iluminación
         Fidelity_Loss = self.l2_loss(illu, input)
         Smooth_Loss = self.smooth_loss(input, illu)
-        if self.color_loss:
-            Color_Loss = self.color_loss_fn(illu)
-            return 1.5*Fidelity_Loss + Smooth_Loss + Color_Loss
-        return 1.5*Fidelity_Loss + Smooth_Loss
-
-class ColorLoss(nn.Module):
-    def __init__(self):
-        super(ColorLoss, self).__init__()
-    
-    def forward(self, illu):
-        red_mean = illu[:, 0, :, :].mean(dim=(1, 2))
-        green_mean = illu[:, 1, :, :].mean(dim=(1, 2))
-        blue_mean = illu[:, 2, :, :].mean(dim=(1, 2))
-        r_g = (red_mean - green_mean)**2
-        r_b = (red_mean - blue_mean)**2
-        g_b = (green_mean - blue_mean)**2
-        loss_val = (r_g + r_b + g_b).mean()
-        return loss_val
+        
+        # Pérdidas al producto mejorado
+        Exp_Loss = self.exp_loss_fn(enhanced)
+        Col_Loss = self.color_loss_fn(enhanced)
+        
+        # Pesamos Exposure alto porque es el incentivo principal de corrección lumínica 
+        return 1.5 * Fidelity_Loss + 2 * Exp_Loss +  Col_Loss
 
 class SmoothLoss(nn.Module):
     def __init__(self):

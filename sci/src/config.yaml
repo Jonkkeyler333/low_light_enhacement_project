@@ -1,6 +1,6 @@
 DATA_DIR: /content/data
 BATCH_SIZE: 8
 NUM_WORKERS: 4
-EPOCHS: 100
+EPOCHS: 120
 LEARNING_RATE: 0.0001
 log_dir: ../logs

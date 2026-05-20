@@ -121,7 +121,7 @@ class Network(nn.Module):
         i_list, en_list, in_list, _ = self(input)
         loss = torch.tensor(0.0, device=input.device)
         for i in range(self.stage):
-            loss += self._criterion(in_list[i], i_list[i])
+            loss += self._criterion(in_list[i], i_list[i], en_list[i])
         return loss
 
 
@@ -159,5 +159,5 @@ class Finetunemodel(nn.Module):
 
     def _loss(self, input) -> torch.Tensor:
         i, r = self(input)
-        loss = self._criterion(input, i)
+        loss = self._criterion(input, i, r)
         return loss
