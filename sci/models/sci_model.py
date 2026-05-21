@@ -65,16 +65,16 @@ class CalibrateNetwork(nn.Module):
 
         self.in_conv = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            nn.BatchNorm2d(channels),
+            # nn.BatchNorm2d(channels),
             nn.ReLU()
         )
 
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            nn.BatchNorm2d(channels),
+            # nn.BatchNorm2d(channels),
             nn.ReLU(),
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            nn.BatchNorm2d(channels),
+            # nn.BatchNorm2d(channels),
             nn.ReLU(),
             SEBlock(channels = channels, reduction = 4)
         )
