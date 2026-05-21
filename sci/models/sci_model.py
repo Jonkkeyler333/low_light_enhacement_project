@@ -1,6 +1,19 @@
 import torch
 import torch.nn as nn
 from models.loss import LossFunction
+from torchvision.ops import SqueezeExcitation
+
+class SEBlock(nn.Module):
+    def __init__(self, channels, reduction=8):
+        super().__init__()
+
+        self.se = SqueezeExcitation(
+            input_channels=channels,
+            squeeze_channels=channels // reduction
+        )
+
+    def forward(self, x):
+        return self.se(x)
 
 class EnhanceNetwork(nn.Module):
     def __init__(self, layers, channels):
@@ -17,7 +30,7 @@ class EnhanceNetwork(nn.Module):
 
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            nn.BatchNorm2d(channels),
+            # nn.BatchNorm2d(channels),
             nn.ReLU()
         )
 
@@ -62,7 +75,8 @@ class CalibrateNetwork(nn.Module):
             nn.ReLU(),
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
             nn.BatchNorm2d(channels),
-            nn.ReLU()
+            nn.ReLU(),
+            SEBlock(channels = channels, reduction = 4)
         )
         self.blocks = nn.ModuleList()
         for i in range(layers):

@@ -1,67 +1,43 @@
 import torch
 import torch.nn as nn
-# class LossFunction(nn.Module):
-#     def __init__(self, color_loss = False):
-#         super(LossFunction, self).__init__()
-#         self.l2_loss = nn.MSELoss()
-#         self.smooth_loss = SmoothLoss()
-#         self.color_loss = color_loss
-#         if self.color_loss:
-#             self.color_loss_fn = ColorLoss()
 
-#     def forward(self, input, illu):
-#         Fidelity_Loss = self.l2_loss(illu, input)
-#         Smooth_Loss = self.smooth_loss(input, illu)
-#         if self.color_loss:
-#             # Color_Loss suele ser muy grande, le damos un peso menor (e.g. 5.0) para que no abrume a Smooth_Loss
-#             Color_Loss = self.color_loss_fn(illu)
-#             return 2*Fidelity_Loss + 1.5*Smooth_Loss + 0.5*Color_Loss
-#         return 1.5*Fidelity_Loss + Smooth_Loss
+# class ExposureLoss(nn.Module):
+#     def __init__(self, patch_size=16, mean_val=0.6):
+#         super(ExposureLoss, self).__init__()
+#         self.pool = nn.AvgPool2d(patch_size)
+#         self.mean_val = mean_val
 
-class ExposureLoss(nn.Module):
-    def __init__(self, patch_size=16, mean_val=0.6):
-        super(ExposureLoss, self).__init__()
-        self.pool = nn.AvgPool2d(patch_size)
-        self.mean_val = mean_val
+#     def forward(self, enhanced):
+#         # Promedio local usando Average Pooling para asegurar exposición balanceada
+#         x = torch.mean(enhanced, dim=1, keepdim=True)
+#         mean = self.pool(x)
+#         return torch.mean(torch.pow(mean - self.mean_val, 2))
 
-    def forward(self, enhanced):
-        # Promedio local usando Average Pooling para asegurar exposición balanceada
-        x = torch.mean(enhanced, dim=1, keepdim=True)
-        mean = self.pool(x)
-        return torch.mean(torch.pow(mean - self.mean_val, 2))
+# class ColorAngleLoss(nn.Module):
+#     def __init__(self):
+#         super(ColorAngleLoss, self).__init__()
 
-class ColorConstancyLoss(nn.Module):
-    def __init__(self):
-        super(ColorConstancyLoss, self).__init__()
-
-    def forward(self, enhanced):
-        # Evalúa sobre toda la imagen pero con la imagen resultante, preservando tono gris natural
-        mean_rgb = torch.mean(enhanced, dim=(2, 3), keepdim=True)
-        mr, mg, mb = mean_rgb[:, 0, :, :], mean_rgb[:, 1, :, :], mean_rgb[:, 2, :, :]
-        d_rg = torch.pow(mr - mg, 2)
-        d_rb = torch.pow(mr - mb, 2)
-        d_gb = torch.pow(mg - mb, 2)
-        return torch.mean(d_rg + d_rb + d_gb)
+#     def forward(self, input_image, enhanced_image):
+#         # Aplanar para calcular similitud del vector (R,G,B) por cada pixel
+#         in_rgb = input_image.view(input_image.shape[0], 3, -1)
+#         en_rgb = enhanced_image.view(enhanced_image.shape[0], 3, -1)
+        
+#         # Similitud del coseno (queremos que sea 1, el ángulo 0)
+#         cos_sim = torch.nn.functional.cosine_similarity(in_rgb, en_rgb, dim=1)
+        
+#         # Penalizamos la diferencia con 1 (el color perfecto)
+#         return torch.mean(1.0 - cos_sim)
 
 class LossFunction(nn.Module):
     def __init__(self):
         super(LossFunction, self).__init__()
         self.l2_loss = nn.MSELoss()
         self.smooth_loss = SmoothLoss()
-        self.exp_loss_fn = ExposureLoss(patch_size=16, mean_val=0.6)
-        self.color_loss_fn = ColorConstancyLoss()
 
     def forward(self, input, illu, enhanced):
-        # Pérdidas al mapa de iluminación
         Fidelity_Loss = self.l2_loss(illu, input)
-        Smooth_Loss = self.smooth_loss(input, illu)
-        
-        # Pérdidas al producto mejorado
-        Exp_Loss = self.exp_loss_fn(enhanced)
-        Col_Loss = self.color_loss_fn(enhanced)
-        
-        # Pesamos Exposure alto porque es el incentivo principal de corrección lumínica 
-        return 1.5 * Fidelity_Loss + 2 * Exp_Loss +  Col_Loss
+        Smooth_Loss = self.smooth_loss(input, illu) 
+        return 1.5 * Fidelity_Loss + Smooth_Loss 
 
 class SmoothLoss(nn.Module):
     def __init__(self):
