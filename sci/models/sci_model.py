@@ -3,17 +3,31 @@ import torch.nn as nn
 from models.loss import LossFunction
 from torchvision.ops import SqueezeExcitation
 
-class SEBlock(nn.Module):
-    def __init__(self, channels, reduction=8):
-        super().__init__()
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size=7):
+        super(SpatialAttention, self).__init__()
+        assert kernel_size in (3, 7), "kernel_size debe ser 3 o 7"
+        padding = 3 if kernel_size == 7 else 1
 
-        self.se = SqueezeExcitation(
-            input_channels=channels,
-            squeeze_channels=channels // reduction
+        self.conv = nn.Conv2d(
+            in_channels=2,
+            out_channels=1,
+            kernel_size=kernel_size,
+            padding=padding,
+            bias=False
         )
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        return self.se(x)
+        # x: [B, C, H, W]
+        avg_out = torch.mean(x, dim=1, keepdim=True)          # [B, 1, H, W]
+        max_out, _ = torch.max(x, dim=1, keepdim=True)        # [B, 1, H, W]
+
+        attn = torch.cat([avg_out, max_out], dim=1)           # [B, 2, H, W]
+        attn = self.conv(attn)                                # [B, 1, H, W]
+        attn = self.sigmoid(attn)                             # [B, 1, H, W]
+
+        return x * attn
 
 class EnhanceNetwork(nn.Module):
     def __init__(self, layers, channels):
@@ -30,8 +44,9 @@ class EnhanceNetwork(nn.Module):
 
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            # nn.BatchNorm2d(channels),
-            nn.ReLU()
+            nn.BatchNorm2d(channels),
+            nn.ReLU(),
+            SpatialAttention(kernel_size=7),
         )
 
         self.blocks = nn.ModuleList()
@@ -65,18 +80,17 @@ class CalibrateNetwork(nn.Module):
 
         self.in_conv = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            # nn.BatchNorm2d(channels),
+            nn.BatchNorm2d(channels),
             nn.ReLU()
         )
 
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            # nn.BatchNorm2d(channels),
+            nn.BatchNorm2d(channels),
             nn.ReLU(),
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
-            # nn.BatchNorm2d(channels),
+            nn.BatchNorm2d(channels),
             nn.ReLU(),
-            SEBlock(channels = channels, reduction = 4)
         )
         self.blocks = nn.ModuleList()
         for i in range(layers):
