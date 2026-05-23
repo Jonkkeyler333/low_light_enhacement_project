@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from models.loss import LossFunction
-from torchvision.ops import SqueezeExcitation
 
 class SpatialAttention(nn.Module):
     def __init__(self, kernel_size=7):
@@ -46,7 +45,7 @@ class EnhanceNetwork(nn.Module):
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
             nn.BatchNorm2d(channels),
             nn.ReLU(),
-            SpatialAttention(kernel_size=7),
+            #SpatialAttention(kernel_size=7),
         )
 
         self.blocks = nn.ModuleList()
@@ -91,6 +90,7 @@ class CalibrateNetwork(nn.Module):
             nn.Conv2d(in_channels=channels, out_channels=channels, kernel_size=kernel_size, stride=1, padding=padding),
             nn.BatchNorm2d(channels),
             nn.ReLU(),
+            SpatialAttention(kernel_size=7),
         )
         self.blocks = nn.ModuleList()
         for i in range(layers):
@@ -117,7 +117,7 @@ class Network(nn.Module):
         super(Network, self).__init__()
         self.stage = stage
         self.enhance = EnhanceNetwork(layers=1, channels=3)
-        self.calibrate = CalibrateNetwork(layers=3, channels=16)
+        self.calibrate = CalibrateNetwork(layers=4, channels=16)
         self._criterion = LossFunction()
 
     def weights_init(self, m):
