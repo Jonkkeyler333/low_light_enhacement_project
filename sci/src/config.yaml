@@ -1,4 +1,4 @@
-DATA_DIR: /content/data
+DATA_DIR: ../data
 BATCH_SIZE: 8
 NUM_WORKERS: 4
 EPOCHS: 120
