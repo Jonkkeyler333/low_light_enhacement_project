@@ -1,6 +1,6 @@
 /data
-# logs
-# checkpoints
+/logs
+/checkpoints
 # inference
 # resultados_inferencia
 # results

@@ -12,12 +12,11 @@ import matplotlib.pyplot as plt
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Inference in device type {device.type}')
-    model_path = 'checkpoints/exp2/model_epoch_120.pth'
+    model_path = 'checkpoints/checkpoints_baseline/model_epoch_150.pth'
     input_folder = 'data/eval15/low'
-    #input_folder = 'inference/'
+    # input_folder = 'inference/'
     reference_folder = 'data/eval15/high'
-    output_folder = 'resultados_inferencia/exp2/'
-    #output_folder = 'results/exp1/'
+    output_folder = 'results/baseline/'
     os.makedirs(output_folder, exist_ok=True)
     logging.basicConfig(filename = os.path.join(output_folder, 'inference_log.csv'), level=logging.INFO, format='%(asctime)s,%(levelname)s,%(message)s')
     
@@ -56,7 +55,7 @@ def main():
             out_img = Image.fromarray((out_tensor.permute(1, 2, 0).numpy() * 255).astype('uint8'))
             out_img.save(os.path.join(output_folder, img_name))
             if map_error.ndim == 3:
-                map_error_2d = map_error.mean(axis=2)
+                map_error_2d = map_error.mean(axis=2)   
             else:
                 map_error_2d = map_error   
             fig, ax = plt.subplots()
