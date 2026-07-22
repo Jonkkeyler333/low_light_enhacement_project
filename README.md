@@ -1,5 +1,11 @@
 # Low Light Image Enhancement Project
 
+## 📌 Project Note / Disclaimer
+
+* **Current Ownership & Scope:** This project is currently maintained, developed, and owned solely by **Jonkkeyler333**.
+* **Legacy Contributions:** Previous commits from early experimental stages (e.g., initial exploratory scripts from May) belonged to former collaborators. Those legacy algorithms and functions have been fully removed/deprecated from the current codebase and are not part of the active production or architecture.
+<!-- 
+
 Este repositorio explora diversas metodologías para el mejoramiento de imágenes capturadas en condiciones de baja iluminación (low-light image enhancement). El proyecto abarca desde métodos y optimizaciones clásicas hasta un enfoque profundo basado en redes neuronales (Deep Learning).
 
 ## Estructura del Proyecto
@@ -75,4 +81,4 @@ cd sci
 python -m src.inference
 ```
 
-El script guardará las imágenes mejoradas, junto con gráficos adicionales del error en formato SSIM Map, en la carpeta designada por el output, y arrojará un resumen promediado del **PSNR** y el **SSIM**.
+El script guardará las imágenes mejoradas, junto con gráficos adicionales del error en formato SSIM Map, en la carpeta designada por el output, y arrojará un resumen promediado del **PSNR** y el **SSIM**. -->
