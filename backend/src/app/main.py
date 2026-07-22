@@ -2,6 +2,8 @@ from fastapi import FastAPI, Depends
 from app.core.settings import Settings, get_settings
 from app.inference.engine import SciEngine
 from contextlib import asynccontextmanager
+from app.controllers.enhance import router as enhance_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,6 +15,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan = lifespan)
 
+app.include_router(enhance_router, prefix="/enhance", tags=["enhance"])
+
 @app.get('/')
 def home():
     return {"message": "hello world"}
@@ -21,14 +25,7 @@ def home():
 def check_model(engine: SciEngine = Depends(lambda: app.state.engine)):
     trainable = sum(
         p.numel()
-        for p in engine.model.parameters()
+        for p in engine.model.parameters() # type: ignore
         if p.requires_grad
     )
     return {"trainable_parameters": trainable}
-
-@app.get('/settings')
-def settings(settings: Settings = Depends(get_settings)):
-    return {
-        "app_name": settings.app_name,
-        "image_size_max": settings.image_size_max
-    }
