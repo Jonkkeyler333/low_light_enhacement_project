@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     image_size_max: int = Field(default = 0)
     model_path: str = Field(default = "")
     allowed_extensions: list[str] = Field(default_factory = list)
-    max_content_length: int = Field(default = 0)
+    max_content_length: int = Field(default = 10 * 1024 * 1024)  # 10 MB
     
     model_config = SettingsConfigDict(env_file = ENV_FILE, env_file_encoding = "utf-8")
     

@@ -1,17 +1,17 @@
 import cv2
 from io import BytesIO
-from fastapi import APIRouter, Depends, UploadFile, File
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
 from app.dependencies.inference import get_engine
 from app.inference.engine import SciEngine
-from app.services.preprocessing import load_image_bytestring, ImageValidationError
+from app.services.preprocessing import load_image_bytestring, ImageValidationError, preprocess_image, posprocess_image
 from typing import Any, Annotated, Union
 from app.core.settings import Settings, get_settings
 
 router = APIRouter()
 
 @router.get('/settings/')
-def settings(settings: Settings = Depends(get_settings)) -> dict[str, Any]:
+def info_settings(settings: Settings = Depends(get_settings)) -> dict[str, Any]:
     return {
         "image_size_max": settings.image_size_max,
         "allowed_extensions": settings.allowed_extensions,
@@ -25,7 +25,6 @@ def check_model(engine: SciEngine = Depends(get_engine)) -> dict[str, Any]:
             for p in engine.model.parameters() # type: ignore
             if p.requires_grad
     )
-    
     return {
         "model_loaded": engine is not None,
         "trainable_parameters": trainable,
@@ -35,36 +34,46 @@ def check_model(engine: SciEngine = Depends(get_engine)) -> dict[str, Any]:
 @router.post('/', response_model = None, responses = {
         200: {
             "content": {"image/png": {}},
-            "description": "Imagen mejorada en PNG"
+            "description": "Image Enhancement in PNG type"
         },
         400: {
             "model": dict,
-            "description": "Error de validación"
+            "description": "Validation Error"
         }
     })
-async def enhance_image(image: Annotated[UploadFile, File(description = 'Image to upload for model enhance')]) -> Union[StreamingResponse, JSONResponse] :
+
+async def enhance_image(
+        image: Annotated[UploadFile, File(description = 'Image to upload for model enhance')],
+        engine: SciEngine = Depends(get_engine),
+        settings: Settings = Depends(get_settings)
+    )   -> Union[StreamingResponse, HTTPException] :
+    print(image.content_type)
+    print(image.filename)
+    if not (image.content_type in settings.allowed_extensions):
+        return HTTPException(status_code = 400, detail = 'File type do not support')
     image_bytes = await image.read()
+    if len(image_bytes) > settings.max_content_length:
+        return HTTPException(status_code = 400, detail = 'File size exceeds the maximum limit')
     try:
         image_array = load_image_bytestring(image_bytes)
+        img_input = preprocess_image(image_array)
+        output = engine.predict(img_input)
+        if output is None:
+            return HTTPException(status_code = 500, detail = "Model not loaded" )
+        image_array = posprocess_image(output)
         success, encoded_buffer = cv2.imencode('.png', image_array)
         if success:
-            # 3. Convert the buffer to a standard Python bytes object
+            # convert the buffer to a standard p    ython bytes object
             png_bytes = encoded_buffer.tobytes()
             print(type(png_bytes))
-            # 4. Create a BytesIO object from the bytes
+            # create a BytesIO object from the bytes
             png_buffer = BytesIO(png_bytes)
             png_buffer.seek(0)
             return StreamingResponse(png_buffer, media_type = "image/png")
         else:
             print("Encoding failed.")
-            return JSONResponse(
-                        status_code = 400,
-                        content = {"error": "Invalid image bytestring"}
-            )
+            return HTTPException(status_code = 400, detail = "Invalid image bytestring")
     except ImageValidationError:
-        return JSONResponse(
-            status_code = 400,
-            content = {"error": "Invalid image bytestring"}
-        )
+        return HTTPException(status_code = 400, detail = "Invalid image bytestring" )
     
     

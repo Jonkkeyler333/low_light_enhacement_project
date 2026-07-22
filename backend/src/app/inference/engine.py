@@ -14,3 +14,11 @@ class SciEngine:
         self.model = Finetunemodel(self.model_path)
         self.model.to(self.model_device)
         self.model.eval()
+        
+    def predict(self, img_tensor: torch.Tensor) -> torch.Tensor | None:
+        if self.model: 
+            i_map, r = self.model(img_tensor)
+            enhanced_tensor = r
+            return enhanced_tensor
+        else:
+            return None
