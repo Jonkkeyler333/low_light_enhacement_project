@@ -2,19 +2,26 @@ from fastapi import FastAPI
 from app.inference.engine import SciEngine
 from contextlib import asynccontextmanager
 from app.controllers.enhance import router as enhance_router
+from app.controllers.users import router as users_router
+from app.controllers.auth import router as auth_router
+from app.dependencies.database import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    engine = SciEngine()
+    engine = SciEngine()    
     print('model is uploading...')
     engine.load()
     app.state.engine = engine
     print('model uploaded successfully')
+    client_mongo = await init_db()
     yield
+    await client_mongo.close()
 
-app = FastAPI(lifespan = lifespan)
+app = FastAPI(lifespan = lifespan, title = "Low Light Enhancement API", description = "API for low light enhancement using deep learning models", version = "0.1.0")
 
-app.include_router(enhance_router, prefix="/enhance", tags=["enhance"])
+app.include_router(enhance_router, prefix="/api/enhance", tags=["enhance"])
+app.include_router(users_router, prefix="/api/users", tags=["users"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 
 @app.get('/')
 def home():

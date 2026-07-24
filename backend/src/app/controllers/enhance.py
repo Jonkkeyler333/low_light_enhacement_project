@@ -49,11 +49,12 @@ async def enhance_image(
     )   -> Union[StreamingResponse, HTTPException] :
     print(image.content_type)
     print(image.filename)
+    print(settings.allowed_extensions)
     if not (image.content_type in settings.allowed_extensions):
-        return HTTPException(status_code = 400, detail = 'File type do not support')
+        raise HTTPException(status_code = 400, detail = 'File type do not support')
     image_bytes = await image.read()
     if len(image_bytes) > settings.max_content_length:
-        return HTTPException(status_code = 400, detail = 'File size exceeds the maximum limit')
+        raise HTTPException(status_code = 400, detail = 'File size exceeds the maximum limit')
     try:
         image_array = load_image_bytestring(image_bytes)
         img_input = preprocess_image(image_array)
@@ -63,7 +64,7 @@ async def enhance_image(
         image_array = posprocess_image(output)
         success, encoded_buffer = cv2.imencode('.png', image_array)
         if success:
-            # convert the buffer to a standard p    ython bytes object
+            # convert the buffer to a standard python bytes object
             png_bytes = encoded_buffer.tobytes()
             print(type(png_bytes))
             # create a BytesIO object from the bytes
@@ -72,8 +73,6 @@ async def enhance_image(
             return StreamingResponse(png_buffer, media_type = "image/png")
         else:
             print("Encoding failed.")
-            return HTTPException(status_code = 400, detail = "Invalid image bytestring")
+            raise HTTPException(status_code = 400, detail = "Invalid image bytestring")
     except ImageValidationError:
-        return HTTPException(status_code = 400, detail = "Invalid image bytestring" )
-    
-    
+        raise   HTTPException(status_code = 400, detail = "Invalid image bytestring" )
