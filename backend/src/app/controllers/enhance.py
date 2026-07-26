@@ -7,6 +7,7 @@ from app.inference.engine import SciEngine
 from app.services.preprocessing import load_image_bytestring, ImageValidationError, preprocess_image, posprocess_image
 from typing import Any, Annotated, Union
 from app.core.settings import Settings, get_settings
+from app.dependencies.user import get_current_user
 
 router = APIRouter()
 
@@ -45,11 +46,13 @@ def check_model(engine: SciEngine = Depends(get_engine)) -> dict[str, Any]:
 async def enhance_image(
         image: Annotated[UploadFile, File(description = 'Image to upload for model enhance')],
         engine: SciEngine = Depends(get_engine),
-        settings: Settings = Depends(get_settings)
+        settings: Settings = Depends(get_settings),
+        user = Depends(get_current_user)
     )   -> Union[StreamingResponse, HTTPException] :
     print(image.content_type)
     print(image.filename)
     print(settings.allowed_extensions)
+    print(user.email)
     if not (image.content_type in settings.allowed_extensions):
         raise HTTPException(status_code = 400, detail = 'File type do not support')
     image_bytes = await image.read()

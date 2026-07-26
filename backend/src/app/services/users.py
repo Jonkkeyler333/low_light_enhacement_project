@@ -29,6 +29,14 @@ class UserService:
         user = await self.user_repository.get_user_by_email(email)
         return user
     
+    async def get_user_id(self, id: str) -> User | None:
+        user = await self.user_repository.get_user_by_id(str(id))
+        return user
+    
+    async def delete_user(self, id: str) -> bool:
+        result = await self.user_repository.delete_user(str(id))
+        return result
+    
     async def login_user(self, email:str, plain_password:str) -> dict:
         user = await self.user_repository.get_user_by_email(email)
         if not user:
