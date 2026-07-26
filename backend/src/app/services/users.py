@@ -2,6 +2,7 @@ from app.repositories.users import UserRepository
 from app.models.user import User, CreateUserError, InvalidCredentialsError
 from pymongo.errors import DuplicateKeyError
 from pydantic import ValidationError
+from datetime import datetime , timezone
 from app.core.auth import get_password_hash, verify_password, create_jwt_token
 
 class UserService:
@@ -24,13 +25,21 @@ class UserService:
         users = await self.user_repository.get_users(skip = skip, limit = limit)
         return users
     
+    async def get_user_by_email(self, email: str) -> User | None:
+        user = await self.user_repository.get_user_by_email(email)
+        return user
+    
     async def login_user(self, email:str, plain_password:str) -> dict:
         user = await self.user_repository.get_user_by_email(email)
         if not user:
             raise InvalidCredentialsError()
         if not verify_password(plain_password, user.hash_password):
             raise InvalidCredentialsError()
-        payload = {"email": str(user.email), "id": str(user.id)}
+        last_login = datetime.now(timezone.utc).isoformat()
+        update_user = await self.user_repository.update_user(str(user.id), {"last_login": last_login})
+        if not update_user:
+            raise InvalidCredentialsError("Failed to update last login time.")
+        payload = {"email": str(update_user.email), "id": str(update_user.id)}
         jwt_token = create_jwt_token(payload)
         return {
             "user": user,
