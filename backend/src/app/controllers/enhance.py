@@ -4,10 +4,13 @@ from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
 from app.dependencies.inference import get_engine
 from app.inference.engine import SciEngine
+from app.services.logs import LogService
 from app.services.preprocessing import load_image_bytestring, ImageValidationError, preprocess_image, posprocess_image
-from typing import Any, Annotated, Union
+from typing import Any, Annotated
 from app.core.settings import Settings, get_settings
 from app.dependencies.user import get_current_user
+from app.schemas.logs import LogCreateRequest
+from time import perf_counter
 
 router = APIRouter()
 
@@ -48,24 +51,46 @@ async def enhance_image(
         engine: SciEngine = Depends(get_engine),
         settings: Settings = Depends(get_settings),
         user = Depends(get_current_user)
-    )   -> Union[StreamingResponse, HTTPException] :
+    )   -> StreamingResponse :
     print(image.content_type)
     print(image.filename)
     print(settings.allowed_extensions)
     print(user.email)
+    log_service = LogService()
+    log = LogCreateRequest(user_id = user.id,
+                                    model_name = engine.model_name,
+                                    input_filename =  str(image.filename),
+                                    processing_time = 0.0,
+                                    status = "processing")
     if not (image.content_type in settings.allowed_extensions):
+        log.status = "failed"
+        log.error_detail = "File type do not support"
+        await log_service.create_log(log.model_dump())
         raise HTTPException(status_code = 400, detail = 'File type do not support')
     image_bytes = await image.read()
     if len(image_bytes) > settings.max_content_length:
         raise HTTPException(status_code = 400, detail = 'File size exceeds the maximum limit')
     try:
+        start = perf_counter()
+        log = LogCreateRequest(user_id = user.id,
+                                model_name = engine.model_name,
+                                input_filename =  str(image.filename),
+                                processing_time = 0.0,
+                                status = "processing")
         image_array = load_image_bytestring(image_bytes)
         img_input = preprocess_image(image_array)
         output = engine.predict(img_input)
         if output is None:
-            return HTTPException(status_code = 500, detail = "Model not loaded" )
+            log.processing_time = perf_counter() - start
+            log.status = "failed"
+            log.error_detail = "Model not loaded"
+            await log_service.create_log(log.model_dump())
+            raise HTTPException(status_code = 500, detail = "Model not loaded" )
         image_array = posprocess_image(output)
         success, encoded_buffer = cv2.imencode('.png', image_array)
+        log.processing_time = perf_counter() - start
+        log.status = "completed"
+        await log_service.create_log(log.model_dump())
         if success:
             # convert the buffer to a standard python bytes object
             png_bytes = encoded_buffer.tobytes()

@@ -9,6 +9,7 @@ class SciEngine:
         self.model_path = self.settings.model_path
         self.model_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model: Optional[torch.nn.Module] = None
+        self.model_name = "SCI_Attention_model"
     
     def load(self) -> None:
         self.model = Finetunemodel(self.model_path)
