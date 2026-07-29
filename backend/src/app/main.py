@@ -25,6 +25,6 @@ app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(logs_router, prefix="/api/logs", tags=["logs"])
 
-@app.get('/', status_code = status.HTTP_200_OK)
+@app.get('/health', status_code = status.HTTP_200_OK)
 def home():
-    return {"message": "hello world"}
+    return {"status": "ok", "message": "API is running successfully"}
