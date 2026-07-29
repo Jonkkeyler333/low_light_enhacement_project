@@ -28,6 +28,9 @@ name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 priority = "explicit"
 
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["src/tests"]
 
 [tool.poetry.dependencies]
 torch = {source = "pytorch-cpu"}
@@ -37,3 +40,11 @@ entrypoint = "app.main:app"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "pytest-mock (>=3.15.1,<4.0.0)",
+    "pytest-asyncio (>=1.4.0,<2.0.0)"
+]

@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from app.inference.engine import SciEngine
 from contextlib import asynccontextmanager
 from app.controllers.enhance import router as enhance_router
 from app.controllers.users import router as users_router
 from app.controllers.auth import router as auth_router
+from app.controllers.logs import router as logs_router
 from app.dependencies.database import init_db
 
 @asynccontextmanager
@@ -22,7 +23,8 @@ app = FastAPI(lifespan = lifespan, title = "Low Light Enhancement API", descript
 app.include_router(enhance_router, prefix="/api/enhance", tags=["enhance"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(logs_router, prefix="/api/logs", tags=["logs"])
 
-@app.get('/')
+@app.get('/', status_code = status.HTTP_200_OK)
 def home():
     return {"message": "hello world"}
