@@ -6,17 +6,27 @@ from app.controllers.users import router as users_router
 from app.controllers.auth import router as auth_router
 from app.controllers.logs import router as logs_router
 from app.dependencies.database import init_db
+from app.core.settings import get_settings
+
+settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    engine = SciEngine()    
-    print('model is uploading...')
-    engine.load()
-    app.state.engine = engine
-    print('model uploaded successfully')
-    client_mongo = await init_db()
-    yield
-    await client_mongo.close()
+    if settings.environment == "development":
+        engine = SciEngine()    
+        print('model is uploading...')
+        engine.load()
+        app.state.engine = engine
+        print('model uploaded successfully')
+        client_mongo = await init_db()
+        yield
+        await client_mongo.close()
+    elif settings.environment == "test":
+        engine = SciEngine()    
+        print('model is uploading...')
+        engine.load()
+        app.state.engine = engine
+        yield
 
 app = FastAPI(lifespan = lifespan, title = "Low Light Enhancement API", description = "API for low light enhancement using deep learning models", version = "0.1.0")
 

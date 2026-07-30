@@ -8,5 +8,5 @@ settings = get_settings()
 
 async def init_db() -> AsyncMongoClient:
     client = AsyncMongoClient(settings.mongodb_uri)
-    await init_beanie(database = client.db_name, document_models=[User, InfereceLog])
+    await init_beanie(database = client.get_default_database(), document_models=[User, InfereceLog])
     return client
