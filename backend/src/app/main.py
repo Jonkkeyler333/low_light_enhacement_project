@@ -22,6 +22,7 @@ async def lifespan(app: FastAPI):
         yield
         await client_mongo.close()
     elif settings.environment == "test":
+        print('test environment detected')
         engine = SciEngine()    
         print('model is uploading...')
         engine.load()

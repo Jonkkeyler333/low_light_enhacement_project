@@ -37,6 +37,6 @@ async def login_user(login_data: UserLoginRequest, response: Response) -> UserLo
 async def logout_user(response: Response):
     response.delete_cookie(key = "access_token", path = "/")
 
-@router.post('/me', response_model = UserResponse, summary = "Get current user", status_code = status.HTTP_200_OK, description = "Retrieve the currently authenticated user's information.")
+@router.get('/me', response_model = UserResponse, summary = "Get current user", status_code = status.HTTP_200_OK, description = "Retrieve the currently authenticated user's information.")
 async def get_me(current_user = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)

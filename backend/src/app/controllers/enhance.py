@@ -97,8 +97,9 @@ async def enhance_image(
             print(type(png_bytes))
             # create a BytesIO object from the bytes
             png_buffer = BytesIO(png_bytes)
+            content_length = len(png_bytes)
             png_buffer.seek(0)
-            return StreamingResponse(png_buffer, media_type = "image/png")
+            return StreamingResponse(png_buffer, media_type = "image/png", headers = {"Content-Length": str(content_length)})
         else:
             print("Encoding failed.")
             raise HTTPException(status_code = 400, detail = "Invalid image bytestring")
