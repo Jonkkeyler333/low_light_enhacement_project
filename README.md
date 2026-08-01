@@ -1,84 +1,144 @@
 # Low Light Image Enhancement Project
 
-## 📌 Project Note / Disclaimer
+## Project Note / Disclaimer
 
-* **Current Ownership & Scope:** This project is currently maintained, developed, and owned solely by **Jonkkeyler333**.
-* **Legacy Contributions:** Previous commits from early experimental stages (e.g., initial exploratory scripts from May) belonged to former collaborators. Those legacy algorithms and functions have been fully removed/deprecated from the current codebase and are not part of the active production or architecture.
+- **Current Ownership & Scope:** This project is currently maintained, developed, and owned solely by Jonkkeyler333.
+- **Legacy Contributions:** Previous commits from early experimental stages (for example, initial exploratory scripts) belonged to former collaborators. Those legacy algorithms and functions have been removed or deprecated and are not part of the active codebase.
 <!-- 
 
 Este repositorio explora diversas metodologías para el mejoramiento de imágenes capturadas en condiciones de baja iluminación (low-light image enhancement). El proyecto abarca desde métodos y optimizaciones clásicas hasta un enfoque profundo basado en redes neuronales (Deep Learning).
 
-## Estructura del Proyecto
 
-El repositorio está dividido principalmente en tres enfoques:
-
-1. **LIME (Low-light Image Enhancement via Illumination Map Estimation)**: 
-   Ubicado en la carpeta `LIME/`, este enfoque tradicional se basa en la estimación de mapas de iluminación mediante un proceso de optimización. Incluye Jupyter Notebooks interactivos (`LIME_LOLdatabase.ipynb` y `LIME_Optimization (2).ipynb`) diseñados para experimentar con la teoría detrás de LIME. Solo es necesario ejecutarlos.
-
-2. **MSR (Multi-Scale Retinex)**:
-   Ubicado en la carpeta `Multi-Scale Retinex (MSR)/`, contiene el notebook `LowLight_MSR.ipynb`. Este espacio está dedicado al clásico algoritmo de mejora inspirado en el modelo retiniano humano (Retinex), aplicado en múltiples escalas, para corregir el color e iluminar zonas oscuras de las imágenes.
 
 3. **SCI (Self-Calibrated Illumination) - Enfoque Principal**:
    Ubicado en el directorio `sci/`. Este es el módulo más robusto del proyecto, donde se implementa un modelo de aprendizaje profundo utilizando PyTorch.
 
 ---
 
-## SCI (Self-Calibrated Illumination)
+## Resumen (propuesta para portafolio)
 
-Este módulo está preparado para ejecutar ciclos de entrenamiento (train) e inferencia guiados con métricas (PSNR y SSIM).
+Proyecto de mejora de imágenes en condiciones de baja iluminación que combina una arquitectura en capas (API REST con FastAPI) y un motor de inferencia basado en PyTorch. Incluye endpoints para autenticación, gestión de usuarios y registros de inferencia, además de código para entrenamiento e inferencia del modelo SCI (Self-Calibrated Illumination).
 
-### Configuración del Entorno de Python
+El README se organiza en secciones: Tecnologías, Arquitectura, Modelo, Motivación, Objetivos, Instalación, Ejecución, Testing, Variables de entorno y Buenas prácticas.
 
-Primero, se instalan las dependencias requeridas. Se recomienda usar un entorno virtual. Ejecuta:
+---
+
+## Tecnologías
+
+- Python 3.12+
+- FastAPI (API REST)
+- Beanie (ODM para MongoDB, sobre Motor)
+- Motor (Async MongoDB driver)
+- PyMongo (para compatibilidad y utilidades)
+- PyTorch (modelo SCI y entrenamiento)
+- Pillow, OpenCV, numpy, scikit-image (procesamiento de imágenes)
+- PyJWT (JWT auth)
+- pwdlib (hashing seguro de contraseñas)
+- pytest / httpx / pytest-asyncio (testing)
+
+Dependencias principales están en `backend/pyproject.toml` y `requirements.txt`.
+
+## Arquitectura (en capas)
+
+La aplicación sigue una arquitectura organizada por responsabilidades:
+
+- `controllers` (API layer): rutas y validaciones (FastAPI routers).
+- `services` (business logic): orquestan operaciones, reglas de negocio y llamadas a repositorios.
+- `repositories` (data access): encapsulan accesos a la base de datos usando modelos Beanie.
+- `models` (domain models): modelos Beanie/Pydantic (`User`, `InfereceLog`).
+- `dependencies` (infra): inicialización de base de datos, dependencias de FastAPI.
+- `schemas` (DTOs): Pydantic schemas para requests/responses.
+- `inference` (ML engine): motor PyTorch para carga de modelos e inferencia (`SciEngine`).
+
+Esta separación facilita pruebas, mantenimiento y permite exponer solo la capa necesaria a la API.
+
+## Modelo
+
+- En `sci/` se implementa el modelo principal tipo SCI (Self-Calibrated Illumination).
+- Entrenamiento e inferencia se realizan con PyTorch; checkpoints (`.pth`) se almacenan en `sci/checkpoints/`.
+- El repo incluye utilidades para evaluación (PSNR, SSIM) y scripts de inferencia para procesar imágenes de entrada.
+
+## Motivación
+
+Las imágenes capturadas en condiciones de baja iluminación sufren pérdida de detalle, ruido y baja relación señal/ruido. El objetivo de este proyecto es aplicar técnicas de deep learning para restaurar detalle, mejorar la exposición y producir imágenes visualmente útiles y cuantificables mediante métricas (PSNR/SSIM).
+
+## Objetivos
+
+- Crear una API REST que permita subir imágenes, ejecutar la inferencia sobre un modelo entrenado y almacenar logs de uso.
+- Proveer endpoints para la gestión de usuarios y autenticación basada en JWT con cookies.
+- Mantener una estructura limpia en capas que facilite testing y desarrollo iterativo.
+- Incluir pipelines reproducibles para entrenamiento e inferencia y facilitar evaluación con métricas.
+
+## Instalación rápida
+
+1. Clona el repo:
 
 ```bash
-pip install -r requirements.txt
+git clone <repo-url>
+cd low_light_enhancement_project/backend
 ```
 
-### Conjunto de Datos (LOLDataset)
-
-El modelo está diseñado para entrenarse a partir del conjunto de datos **LOLDataset**. Si se quiere probar, debes descargarlo y descomprimirlo en la carpeta correspondiente.
-
-Puedes descargar los datos (usando `gdown` por ejemplo) y extraerlos en una carpeta `sci/data/` (o bien, reescribir la ruta en `sci/src/config.yaml`). El directorio debería tener una estructura como esta tras la extracción:
-- `data/our485/` (entrenamiento)
-- `data/eval15/` (validación / pruebas)
-
-*Nota:* Para descargar los datos de manera automatizada de Google Drive, puedes consultar el script provisto en `sci/src/run.ipynb`, que contiene el URL de descarga a utilizar.
-
-### Notas sobre el Colab Notebook (`run.ipynb`)
-
-El archivo [sci/src/run.ipynb](sci/src/run.ipynb) contiene instrucciones empaquetadas **específicamente orientadas para ejecutarse en kernels de Google Colab**. Este notebook provee todos los pasos: desde montar Google Drive y descargar el dataset remotamente, hasta clonar el repo y lanzar el script de entrenamiento, facilitando el uso de las GPUs libres de Colab. No debe utilizarse para correr los scripts interactivamente en tu máquina local.
-
-### Ejecución de Código Local
-
-Para correr los scripts de manera local, asegúrate de estar siempre dentro de la ruta `sci/` y de tener la carpeta `data/` en su lugar o listada de acorde a tu path en el archivo [sci/src/config.yaml](sci/src/config.yaml).
-
-#### Entrenamiento
-
-Para ejecutar el entrenamiento con los hiperparámetros de `src/config.yaml`, ejecuta:
+2. Crea y activa un entorno virtual (recomendado) e instala dependencias:
 
 ```bash
-cd sci
-python -m src.train
+python -m venv .venv
+source .venv/Scripts/activate   # Windows PowerShell: .\.venv\Scripts\Activate.ps1
+pip install -r ../requirements.txt
+# o usar poetry: poetry install
 ```
 
-Los checkpoints (`.pth`) del modelo se almacenarán dentro de la carpeta `checkpoints/` junto al registro de logs y métricas.
+3. Variables de entorno: configura `backend/src/app/.env` o exporta variables necesarias:
 
-#### Inferencia
+- `MONGODB_URI` : URI de producción/ desarrollo (MongoDB Atlas)
+- `MONGODB_URI_TEST` : URI para pruebas
+- `SECRET_KEY`, `ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `ENVIRONMENT` : setear a `development` o `test` según corresponda
 
-Para evaluar el sistema o realizar predicciones con un modelo previamente entrenado, utiliza el script [sci/src/inference.py](sci/src/inference.py). 
-
-Dentro del código, notarás que hay variables de ruta para la entrada (`input_folder`) y la salida (`output_folder`). Existen dos configuraciones allí (una de ellas comentada):
-- **Imágenes del dataset:** Las rutas predeterminadas (ej. `data/eval15/low`) analizan el conjunto de datos de validación, por lo que requieren una carpeta de referencia (`reference_folder`) para calcular las métricas de rendimiento.
-- **Imágenes propias:** Las rutas comentadas (ej. `inference/`) están listas para descomentarse en caso de que desees colocar tus propias imágenes oscuras y ver el antes/después del modelo. *(Nota: si evalúas imágenes propias sin un target o ground truth, podrías necesitar comentar la parte del código que calcula PSNR y SSIM con la referencia).*
-
-Asegúrate de apuntar a tu modelo deseado en `model_path` (archivo `.pth`) y luego ejecuta:
-
-Luego ejecuta:
+## Ejecutar la API (desarrollo)
 
 ```bash
-cd sci
-python -m src.inference
+cd backend
+uvicorn app.main:app --reload
 ```
 
-El script guardará las imágenes mejoradas, junto con gráficos adicionales del error en formato SSIM Map, en la carpeta designada por el output, y arrojará un resumen promediado del **PSNR** y el **SSIM**. -->
+Para evitar que los tests modifiquen la base de datos de desarrollo:
+
+1. Asegura que `ENVIRONMENT=test` esté configurado antes de importar la app en tus tests (por ejemplo, en `tests/conftest.py`).
+2. Inicializa Beanie con una instancia `Database` explícita (usar Motor) para apuntar a la base de tests.
+
+## Testing
+
+Se emplea `pytest` con `pytest-asyncio` y `httpx` para tests de integración. Ejecuta:
+
+```bash
+pytest -q
+```
+
+Consejo: exporta `ENVIRONMENT=test` en tu entorno de CI o en la sesión antes de ejecutar tests para evitar inicializaciones que afecten la base de desarrollo.
+
+## Variables de entorno (ejemplo)
+
+El archivo `backend/src/app/.env` contiene:
+
+- `APP_NAME`, `IMAGE_SIZE_MAX`, `MODEL_PATH`, `ALLOWED_EXTENSIONS`, `MAX_CONTENT_LENGTH`
+- `MONGODB_URI`, `MONGODB_URI_TEST`
+- `ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`, `SECRET_KEY`, `ENVIRONMENT`
+
+Evita commitear credenciales reales en el repositorio; usa secret managers o variables de entorno del CI.
+
+## Buenas prácticas y mejoras sugeridas
+
+- Usar una URI de MongoDB separada para tests o un MongoDB in-memory / contenedor aislado.
+- Inicializar Beanie con `motor.motor_asyncio.AsyncIOMotorClient` y pasar `client.get_default_database()` o `client['db_test']` a `init_beanie` para evitar ambigüedades.
+- Añadir CI que ejecute tests en una base de datos efímera y que no exponga credenciales.
+- Añadir documentación de API (OpenAPI/Redoc) y ejemplos de uso en `docs/`.
+
+---
+
+Si quieres, puedo:
+
+ - Generar una versión en inglés del README.
+ - Añadir ejemplos de requests curl o un Postman collection.
+ - Preparar parches para convertir `conftest.py` y `dependencies/database.py` a usar `motor` y evitar que la BD de desarrollo se borre.
+
+Gracias — dime qué quieres que haga a continuación.
