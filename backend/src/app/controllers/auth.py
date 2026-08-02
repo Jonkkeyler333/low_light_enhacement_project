@@ -34,7 +34,9 @@ async def login_user(login_data: UserLoginRequest, response: Response) -> UserLo
     return UserLoginResponse(message = response_dict["message"])
 
 @router.post('/logout', summary = "Logout a user", status_code = status.HTTP_204_NO_CONTENT, description = "Logout the currently authenticated user by clearing the JWT token cookie.")
-async def logout_user(response: Response):
+async def logout_user(response: Response, current_user = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code = 401, detail = "Not authenticated")
     response.delete_cookie(key = "access_token", path = "/")
 
 @router.get('/me', response_model = UserResponse, summary = "Get current user", status_code = status.HTTP_200_OK, description = "Retrieve the currently authenticated user's information.")
