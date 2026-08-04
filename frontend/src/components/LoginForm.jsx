@@ -3,6 +3,7 @@ import authService from "../services/auth"
 import { useField } from "../hooks"
 import { useNavigate } from "react-router-dom"
 import useUser from "../hooks/useUser"
+import { Container, TextField, Button } from "@mui/material"
 
 const LoginForm = () => {
     const { reset: resetEmail, ...emailField} = useField("email")
@@ -12,6 +13,7 @@ const LoginForm = () => {
     const { user } = useUser()
 
     const handleLogin = async (event) => {
+        event.preventDefault()
         if (user){
             alert("You are already logged in. Please log out first.")
             return
@@ -20,7 +22,6 @@ const LoginForm = () => {
             alert("Please fill in both email and password fields.")
             return
         }
-        event.preventDefault()
         const payload = {
             email: emailField.value, 
             plain_password: passwordField.value
@@ -44,21 +45,17 @@ const LoginForm = () => {
     }
 
     return (
-        <div>
+        <Container maxWidth="sm">
             <form onSubmit={handleLogin}>
-                <div>
-                    <label>Email  </label>
-                    <input {...emailField} />
-                </div>
-                <div>
-                    <label>Password  </label>
-                    <input {...passwordField} />
-                </div>
-                <button type="submit">Login</button>
+                <TextField {...emailField} fullWidth margin="normal" label="Email"/>
+                <TextField {...passwordField} fullWidth margin="normal" label="Password"/>
+                <Button type="submit" variant="contained" sx={{ mt: 2, mr: 1 }}>
+                    Login
+                </Button>
+                <Button type="button" onClick={() => handleReset()} variant="outlined" color="error" sx={{ mt: 2 }}> Reset </Button>
             </form>
-            <button onClick={() => handleReset()}>Reset</button>
             {error && <p>{error}</p>}
-        </div>
+        </Container>
     )
 }
 

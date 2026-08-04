@@ -1,17 +1,14 @@
+import { Container, TextField, Button } from "@mui/material"
 import { useField } from "../hooks"
 import authService from "../services/auth"
 import { useNavigate } from "react-router-dom"
 
-// campos name: str = Field(min_length = 1, max_length = 50)
-    // last_name: str = Field(min_length = 1, max_length = 50)
-    // email: EmailStr
-    // plain_password: str = Field(min_length = 1)
 
 const RegisterForm = () => {
     const { reset: resetEmail, ...emailField} = useField("email")
     const { reset: resetPassword, ...passwordField} = useField("password")
-    const { ...nameField} = useField("name")
-    const { ...lastNameField} = useField("last_name")
+    const { reset: resetName, ...nameField} = useField("name")
+    const { reset: resetLastName, ...lastNameField} = useField("last_name")
     const { reset: resetConfirmPassword, ...confirmPasswordField} = useField("confirm_password")
     const navigate = useNavigate()
 
@@ -40,37 +37,26 @@ const RegisterForm = () => {
         }
     }
 
+    const handleReset = () => {
+        resetEmail()
+        resetPassword()
+        resetConfirmPassword()
+        resetName()
+        resetLastName()
+    }
+
     return (
-        <div>
-            <h3>Welcome to the Registration Form </h3>
-            <span role="img" aria-label="waving man" aria-hidden="true">
-                👋
-            </span>
-            <p>Fill in the fields below to register.</p>
+        <Container maxWidth="sm">
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Name  </label>
-                    <input {...nameField} />
-                </div>
-                <div>
-                    <label>Last Name  </label>
-                    <input {...lastNameField} />
-                </div>
-                <div>
-                    <label>Email  </label>
-                    <input {...emailField} />
-                </div>
-                <div>
-                    <label>Password  </label>
-                    <input {...passwordField} />
-                </div>
-                <div>
-                    <label>Confirm Password  </label>
-                    <input {...confirmPasswordField} />
-                </div>
-                <button type="submit">Register</button>
+                <TextField {...nameField} fullWidth margin="normal" label="Name"/>
+                <TextField {...lastNameField} fullWidth margin="normal" label="Last Name"/>
+                <TextField {...emailField} fullWidth margin="normal" label="Email"/>
+                <TextField {...passwordField} fullWidth margin="normal" label="Password"/>
+                <TextField {...confirmPasswordField} fullWidth margin="normal" label="Confirm Password"/>
+                <Button type="submit" variant="contained" sx={{ mt: 2, mr: 1 }}> Register </Button>
+                <Button type="button" onClick={handleReset} variant="outlined" color="error" sx={{ mt: 2 }}> Reset </Button>
             </form>
-        </div>
+        </Container>
     )
 }
 
