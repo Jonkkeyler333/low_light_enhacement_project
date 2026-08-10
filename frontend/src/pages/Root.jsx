@@ -21,7 +21,7 @@ const Root = () => {
                     Bring low-light photos back to life.
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 620, lineHeight: 1.8 }}>
-                    IluminAI improves visibility, balance and clarity in dark images using advanced enhancement pipelines. The interface is designed to stay calm, clear and focused while the model does the heavy lifting.
+                    IluminAI improves visibility, balance and clarity in dark images using advanced computer vision techniques and model.
                 </Typography>
                 <Stack direction="row" spacing={1.5} sx={{ mt: 3, flexWrap: 'wrap' }}>
                     <Button variant="contained" component={Link} to="/login">
@@ -50,14 +50,14 @@ const Root = () => {
             >
                 <Box>
                     <Typography variant="subtitle2" color="text.secondary">
-                        First pass of the UI
+                        AI
                     </Typography>
                     <Typography variant="h5" component="p" sx={{ mt: 1.2, fontWeight: 700 }}>
-                        Clean layout, subtle contrast, and a focus on the image workflow.
+                        Test
                     </Typography>
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 4, maxWidth: 360 }}>
-                    Next steps can add upload, preview, and inference status sections without changing this visual language.
+                    ACA VA UN GIF DEMOSTRACION DE LA APP
                 </Typography>
             </Box>
         </Box>

@@ -8,6 +8,7 @@ export const useUser = () => {
     queryKey: ["user"],
     queryFn: async () => {
       try {
+        console.log("GET ME ejecutado")
         return await authService.getMe()
       } catch (error) {
         if (error.response?.status === 401) {
@@ -26,8 +27,8 @@ export const useUser = () => {
   const logoutMutation = useMutation({
     mutationFn: authService.logout,
     onSuccess: () => {
-        // queryClient.invalidateQueries({ queryKey: ["user"]})
         queryClient.setQueryData(["user"], null)
+        queryClient.invalidateQueries({ queryKey: ["user"]})
     }
   })
 

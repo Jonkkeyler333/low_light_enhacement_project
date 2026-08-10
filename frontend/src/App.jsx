@@ -1,10 +1,11 @@
 import { Routes, Route } from 'react-router-dom'
-import { Box, Container, CssBaseline, GlobalStyles, ThemeProvider, Typography, createTheme } from '@mui/material'
+import { Box, Container, CssBaseline, GlobalStyles, ThemeProvider, Typography, createTheme, Alert, Snackbar } from '@mui/material'
 import LoginPage from './pages/LoginPage'
 import Menu from './components/Menu'
 import HomePage from './pages/Home'
 import Root from './pages/Root'
 import Footer from './components/Footer'
+import { useMessage, useOpen, useSeverity, useNotifyActions } from './store/notifyStore'
 
 const theme = createTheme({
   palette: {
@@ -24,6 +25,18 @@ const theme = createTheme({
 })
 
 const App = () => {
+  const message = useMessage()
+  const open = useOpen()
+  const severity = useSeverity()
+  const { close } = useNotifyActions()
+
+  const handleClose = (event, reason) => {
+    if (reason == 'clickaway'){
+      return
+    }
+    close()
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -45,20 +58,12 @@ const App = () => {
       >
         <Container maxWidth="lg">
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 3, md: 4 } }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: { xs: 'flex-start', sm: 'center' },
-                justifyContent: 'space-between',
-                flexDirection: { xs: 'column', sm: 'row' },
-                gap: 1.5,
-                py: 1,
-              }}
-            >
+            <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, py: 1, }}>
+              <img src="/ilumina.svg" alt="IluminAI Logo" style={{ width: '65px', height: '65px' }} />
               <Box>
                 <Typography variant="h3" component="h1">IluminAI</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Low-light enhancement for sharper, clearer images.
+                  Low-light enhancement via Deep Learning.
                 </Typography>
               </Box>
               <Menu />
@@ -71,7 +76,13 @@ const App = () => {
                 <Route path="/home" element={<HomePage />} />
               </Routes>
             </Box>
-
+            <Snackbar open={open} autoHideDuration={4000} onClose={handleClose}>
+              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                <Alert severity={severity} sx={{ width: '100%', minWidth: { sm: '400px' }, fontSize: '1.25rem', p: 2 }}>
+                  {message}
+                </Alert>
+              </Box>
+            </Snackbar>
             <Footer />
           </Box>
         </Container>
