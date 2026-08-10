@@ -1,4 +1,3 @@
-import { useState } from "react"
 import authService from "../services/auth"
 import { useField } from "../hooks"
 import { useNavigate } from "react-router-dom"
@@ -6,6 +5,7 @@ import useUser from "../hooks/useUser"
 import { Container, TextField, Button } from "@mui/material"
 import { useNotifyActions } from "../store/notifyStore"
 import { useQueryClient } from "@tanstack/react-query"
+import LoginIcon from '@mui/icons-material/Login';
 
 const LoginForm = () => {
     const { reset: resetEmail, ...emailField} = useField("email")
@@ -52,7 +52,7 @@ const LoginForm = () => {
             <form onSubmit={handleLogin}>
                 <TextField {...emailField} fullWidth margin="normal" label="Email"/>
                 <TextField {...passwordField} fullWidth margin="normal" label="Password"/>
-                <Button type="submit" variant="contained" sx={{ mt: 2, mr: 1 }}>
+                <Button type="submit" startIcon={<LoginIcon />} variant="contained" sx={{ mt: 2, mr: 1 }}>
                     Login
                 </Button>
                 <Button type="button" onClick={() => handleReset()} variant="outlined" color="error" sx={{ mt: 2 }}>Reset Fields</Button>

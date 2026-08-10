@@ -1,5 +1,6 @@
 from app.repositories.log import LogRepository
 from app.models.logs import InfereceLog, ErrorId
+from app.repositories.users import UserRepository
 from pydantic import ValidationError
 
 class LogService:
@@ -12,6 +13,11 @@ class LogService:
         return created_log
     
     async def get_logs(self, skip: int, limit: int, id_user: str | None = None, status: str | None = None) -> list[InfereceLog]:
+        if id_user is not None:
+            user_repo = UserRepository()
+            user = await user_repo.get_user_by_id(id_user)
+            if user is None:
+                raise ValueError(f"User with id {id_user} does not exist.")
         logs = await self.log_repository.get_logs(skip, limit, id_user, status)
         return logs
     

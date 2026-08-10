@@ -17,6 +17,7 @@ async def get_current_user(request: Request) -> User:
         user = await user_service.get_user_by_email(payload["email"])
         if not user:
             raise InvalidCredentialsError( message = "Invalid credentials")
+        print(user.id)
         return user
     except InvalidTokenError as e:
         raise HTTPException(status_code = 401, detail = f"Unauthorized")

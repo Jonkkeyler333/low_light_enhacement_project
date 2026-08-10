@@ -1,4 +1,5 @@
 from app.models.logs import InfereceLog, LogStatus
+from beanie import PydanticObjectId
 
 class LogRepository:
     async def create_log(self, log: InfereceLog) -> InfereceLog:
@@ -12,7 +13,7 @@ class LogRepository:
     async def get_logs(self, skip: int, limit: int, id_user: str | None, status: str | None) -> list[InfereceLog]:
         query_log = {}
         if id_user:
-            query_log['user_id'] = id_user
+            query_log['user_id'] = PydanticObjectId(id_user)
         if status:
             query_log['status'] = status
         logs = await InfereceLog.find(query_log).skip(skip).limit(limit).to_list()

@@ -41,5 +41,3 @@ export const useUser = () => {
     logout: () => logoutMutation.mutate()
   }
 }
-
-export default useUser

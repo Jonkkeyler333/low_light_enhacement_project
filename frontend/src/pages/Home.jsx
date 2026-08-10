@@ -2,13 +2,12 @@ import { useEffect, useRef } from "react"
 import { useState } from "react"
 import modelService from "../services/model"
 import useUser from "../hooks/useUser"
-import ImageZone from "../components/ImageZone"
+import Enhancement from "./EnhancementPage"
 import { useNotifyActions } from "../store/notifyStore"
-import { Container, Typography, Paper, Chip, Box, CircularProgress, Grid, Avatar, Divider, Alert, CardContent, Card } from "@mui/material"
+import { Container, Typography, Paper, Chip, Box, CircularProgress, Grid, Divider, Alert, CardContent, Card } from "@mui/material"
 import {
     AutoAwesome as AutoAwesomeIcon,
     CheckCircle as CheckCircleIcon,
-    Person as PersonIcon,
     CloudUpload as CloudUploadIcon
 } from "@mui/icons-material"
 
@@ -52,7 +51,7 @@ const HomePage = () => {
 
     if (isLoading) {
         return (
-            <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="60vh">
+            <Box display="flex" flexDirection="column" justifycontent="center" alignitems="center" minheight="60vh">
                 <CircularProgress size={50} thickness={4} />
                 <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
                     Loading user data...
@@ -87,13 +86,13 @@ const HomePage = () => {
                     overflow: 'hidden'
                 }}
             >
-                <Box display="flex" alignItems="center" gap={2} mb={2}>
-                    <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
+                <Box display="flex" alignitems="center" gap={2} mb={2}>
+                    {/* <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
                         {user?.name ? user.name[0].toUpperCase() : <PersonIcon />}
-                    </Avatar>
+                    </Avatar> */}
                     <Box>
                         <Typography variant="h4" component="h1" fontWeight="bold">
-                            ¡Welcome, {user?.name || "Usuario"}!
+                            {user.role === "admin" ? "Admin Panel" : `Welcome, ${user?.name || 'Usuario'}!`}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                             Main Panel
@@ -107,19 +106,18 @@ const HomePage = () => {
                 
                 <Divider sx={{ my: 2 }} />
 
-                <Box display="flex" alignItems="center" gap={1} color="primary.main">
+                <Box display="flex" alignitems="center" gap={1} color="primary.main">
                     <CloudUploadIcon fontSize="small" />
-                    <ImageZone />
+                    <Enhancement />
                 </Box>
             </Paper>
 
-
             <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                         <CardContent sx={{ p: 3 }}>
-                            <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-                                <Box display="flex" alignItems="center" gap={1.5}>
+                            <Box display="flex" justifycontent="space-between" alignitems="center" flexwrap="wrap" gap={2}>
+                                <Box display="flex" alignitems="center" gap={1.5}>
                                     <AutoAwesomeIcon color="primary" fontSize="medium" />
                                     <Box>
                                         <Typography variant="h6" fontWeight="bold">
@@ -131,14 +129,14 @@ const HomePage = () => {
                                 { modelData?.model_loaded ? (
                                     <Chip
                                         icon={<CheckCircleIcon />}
-                                        label="Modelo activo y listo"
+                                        label="Model Ready"
                                         color="success"
                                         variant="soft"
                                         sx={{ fontWeight: 'bold' }}
                                     />
                                 ) : (
                                     <Chip
-                                        label="Modelo fuera de línea"
+                                        label="Model Offline"
                                         color="error"
                                         variant="outlined"
                                     />

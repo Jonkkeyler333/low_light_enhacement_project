@@ -5,6 +5,7 @@ import Menu from './components/Menu'
 import HomePage from './pages/Home'
 import Root from './pages/Root'
 import Footer from './components/Footer'
+import NotFoundPage from './pages/NotFoundPage'
 import { useMessage, useOpen, useSeverity, useNotifyActions } from './store/notifyStore'
 
 const theme = createTheme({
@@ -74,6 +75,7 @@ const App = () => {
                 <Route path="/" element={<Root />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/home" element={<HomePage />} />
+                <Route path="/*" element={<NotFoundPage /> } />
               </Routes>
             </Box>
             <Snackbar open={open} autoHideDuration={4000} onClose={handleClose}>

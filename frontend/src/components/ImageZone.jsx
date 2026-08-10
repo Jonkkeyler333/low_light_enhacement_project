@@ -1,26 +1,15 @@
-import { useCallback, useEffect, useState, useMemo } from "react"
+import { useCallback } from "react"
 import { useDropzone } from "react-dropzone"
 // import modelService from "../services/model"
-import { Button, Container, Paper } from "@mui/material"
+import { Container, Paper } from "@mui/material"
 
-const ImageZone = () => {
-    const [file, setFile] = useState(null)
-
+const ImageZone = ({handleFileChange, file}) => {
+    
     const onDrop = useCallback((acceptedFiles) => {
         const image = acceptedFiles[0]
         if (!image) return
-        setFile(image)
-    }, [])
-
-    const preview = useMemo(() => {
-        if (!file) return null
-        return URL.createObjectURL(file)
-    }, [file])
-
-    useEffect(() => {
-        if (!preview) return
-        return () => URL.revokeObjectURL(preview)
-    }, [preview])
+        handleFileChange(image)
+    }, [handleFileChange])
 
     const { getRootProps, getInputProps } = useDropzone({
         onDrop,
@@ -31,10 +20,6 @@ const ImageZone = () => {
         },
         multiple: false,
     })
-
-    const handleReset = () => {
-        setFile(null)
-    }
 
     return (
         <div>
@@ -49,12 +34,6 @@ const ImageZone = () => {
 
                 </Container>
             )}
-            {preview && (
-                <Container>
-                    <img src={preview} alt="Preview" style={{ width: "500px", height: "500px", objectFit: "contain", marginTop: "10px" }} />
-                </Container>
-            )}
-            <Button onClick={handleReset} variant="contained" color="error" sx={{ mt: 2 }}  >Reset File</Button>
         </div>
     )
 }
