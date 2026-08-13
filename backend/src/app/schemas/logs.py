@@ -1,6 +1,7 @@
+from datetime import datetime
 from app.models.logs import LogStatus
 from beanie import PydanticObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class LogCreateRequest(BaseModel):
     user_id: PydanticObjectId
@@ -10,6 +11,15 @@ class LogCreateRequest(BaseModel):
     processing_time : float
     status: str = Field(default = LogStatus.COMPLETED.value)
     error_detail : str | None = None
+    
+class LogResponse(LogCreateRequest):
+    id: PydanticObjectId
+    created_at: datetime
+    model_config = ConfigDict(from_attributes = True)
+    
+class LogResponseWithCount(BaseModel):
+    logs: list[LogResponse]
+    count: int
     
 class LogGetRequest(BaseModel):
     skip: int = Field(default = 0, ge = 0)

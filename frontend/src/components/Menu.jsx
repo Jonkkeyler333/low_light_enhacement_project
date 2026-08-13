@@ -21,7 +21,7 @@ const Menu = () => {
         <Box
             sx={{
                 display: 'flex',
-                alignItems: 'center',
+                alignitems: 'center',
                 justifyContent: 'space-between',
                 gap: 2,
                 width: '100%',

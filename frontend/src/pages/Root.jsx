@@ -8,7 +8,7 @@ const Root = () => {
                 display: 'grid',
                 gridTemplateColumns: { xs: '1fr', md: '1.1fr 0.9fr' },
                 gap: { xs: 3, md: 4 },
-                alignItems: 'center',
+                alignitems: 'center',
                 minHeight: { xs: 'auto', md: '60vh' },
                 py: { xs: 2, md: 4 },
             }}

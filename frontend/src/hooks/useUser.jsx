@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import authService from "../services/auth"
 
-export const useUser = () => {
+const useUser = () => {
   const queryClient = useQueryClient()
 
   const query = useQuery({
@@ -41,3 +41,5 @@ export const useUser = () => {
     logout: () => logoutMutation.mutate()
   }
 }
+
+export default useUser
